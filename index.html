@@ -1528,7 +1528,7 @@
       if (step === 3) {
         address.textContent = 'harris-county-tax/search?address=[input]';
         skeleton.classList.remove('is-active');
-        typeInto(tile, output, finalJson, 14);
+        typeInto(tile, output, finalJson, 18);
         caption.textContent = 'Step 3: the useful output is structured JSON, not a screenshot.';
       }
     }
@@ -1542,9 +1542,9 @@
     }
     function run() {
       reset();
-      later(tile, () => setStep(1), 300);
-      later(tile, () => setStep(2), 900);
-      later(tile, () => setStep(3), 1450);
+      later(tile, () => setStep(1), 600);
+      later(tile, () => setStep(2), 1900);
+      later(tile, () => setStep(3), 3200);
     }
     back.querySelector('[data-tax-action="replay"]').addEventListener('click', run);
     steps.forEach(btn => {
