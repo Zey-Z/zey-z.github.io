@@ -499,31 +499,75 @@
   .chat-msg.student { background: var(--gray); color: var(--ink); align-self: flex-start; }
   .chat-msg.coach { background: rgba(0,113,227,.1); color: var(--ink); align-self: flex-end; }
   .schema-chip { display: inline-block; margin-top: 7px; }
-  .kg-grid {
+  .kg-workbench {
     display: grid;
-    grid-template-columns: minmax(0, .92fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1fr);
     gap: 12px;
     align-items: stretch;
   }
-  .transcript button {
-    border: 0;
-    border-radius: 7px;
-    padding: 1px 4px;
-    color: var(--blue-deep);
-    background: rgba(0,113,227,.1);
-    cursor: pointer;
-    font: inherit;
+  .kg-evidence {
+    display: grid;
+    gap: 8px;
   }
-  .transcript button.is-active,
-  .transcript button:hover {
-    background: rgba(0,113,227,.16);
-  }
-  .graph-panel {
-    min-height: 150px;
+  .kg-evidence button {
+    width: 100%;
     border: 1px solid #e6e7eb;
     border-radius: 13px;
     background: rgba(255,255,255,.76);
-    padding: 8px;
+    padding: 11px;
+    color: var(--ink-soft);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease);
+  }
+  .kg-evidence button:hover,
+  .kg-evidence button.is-active {
+    border-color: rgba(0,113,227,.36);
+    background: rgba(0,113,227,.07);
+    transform: translateY(-1px);
+  }
+  .kg-evidence .label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .kg-evidence b {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .kg-evidence .path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--blue-deep);
+  }
+  .graph-panel {
+    min-height: 178px;
+    border: 1px solid #e6e7eb;
+    border-radius: 13px;
+    background: rgba(255,255,255,.76);
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    align-content: center;
+  }
+  .graph-panel svg { width: 100%; height: auto; display: block; }
+  .kg-legend {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .kg-legend span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    background: rgba(0,0,0,.05);
+    border-radius: 999px;
+    padding: 4px 7px;
   }
   .graph-node,
   .graph-edge { transition: opacity .25s var(--ease), stroke-width .25s var(--ease), r .25s var(--ease); }
@@ -531,6 +575,24 @@
   .graph-edge { opacity: .2; }
   .graph-node.is-hot { opacity: 1; r: 10; }
   .graph-edge.is-hot { opacity: 1; stroke-width: 3; }
+  .kg-score-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid #e6e7eb;
+    border-radius: 13px;
+    background: rgba(255,255,255,.76);
+    padding: 10px 11px;
+  }
+  .kg-score-card span,
+  .kg-score-card b {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+  }
+  .kg-score-card span { color: var(--ink-soft); }
+  .kg-score-card b { color: var(--ink); font-weight: 500; }
+  .kg-score-card .line { height: 4px; border-radius: 999px; background: var(--blue); opacity: .75; }
   .score-scale {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -634,7 +696,7 @@
   }
   @media (max-width: 820px) {
     .tile-face { padding: 30px 24px; }
-    .kg-grid,
+    .kg-workbench,
     .browser-body { grid-template-columns: 1fr; }
     .chip-grid { grid-template-columns: 1fr; }
     .slack-findings { grid-template-columns: repeat(5, minmax(0, 1fr)); }
@@ -1178,35 +1240,44 @@
     clinical: `
       <div class="tile-demo" data-demo-panel="clinical">
         <div class="demo-topline">
-          <span class="demo-title">Transcript to graph</span>
-          <span class="demo-chip" data-kg-status>selected: chest pain</span>
+          <span class="demo-title">Clinical extraction review</span>
+          <span class="demo-chip" data-kg-status>symptom linked</span>
         </div>
-        <p class="demo-mini-copy">Click a highlighted term to light the linked node and relation.</p>
-        <div class="kg-grid">
-          <div class="transcript">
-            Patient reports <button type="button" data-kg-target="symptom">chest pain</button> during the visit.<br>
-            Clinician discusses possible diagnosis and prescribed <button type="button" data-kg-target="medication">aspirin</button>.
+        <div class="kg-workbench">
+          <div class="kg-evidence" aria-label="Transcript evidence">
+            <button type="button" data-kg-target="symptom">
+              <span class="label">evidence 01</span>
+              <b>Patient reports chest pain</b>
+              <span class="path">Symptom -> Diagnosis</span>
+            </button>
+            <button type="button" data-kg-target="medication">
+              <span class="label">evidence 02</span>
+              <b>Prescribed aspirin</b>
+              <span class="path">Medication -> Diagnosis</span>
+            </button>
           </div>
           <div class="graph-panel">
-            <svg viewBox="0 0 260 150" role="img" aria-label="Mini clinical knowledge graph">
-              <line class="graph-edge" data-kg-edge="symptom" x1="72" y1="48" x2="132" y2="78" stroke="var(--blue)" stroke-width="2"/>
-              <line class="graph-edge" data-kg-edge="medication" x1="192" y1="48" x2="132" y2="78" stroke="var(--blue)" stroke-width="2"/>
-              <circle class="graph-node" data-kg-node="symptom" cx="72" cy="48" r="8" fill="var(--blue)"/>
-              <circle class="graph-node" data-kg-node="diagnosis" cx="132" cy="78" r="8" fill="var(--ink-soft)"/>
-              <circle class="graph-node" data-kg-node="medication" cx="192" cy="48" r="8" fill="var(--green)"/>
-              <circle class="graph-node" data-kg-node="qa" cx="132" cy="118" r="8" fill="var(--blue-deep)"/>
-              <line class="graph-edge" data-kg-edge="qa" x1="132" y1="86" x2="132" y2="110" stroke="var(--blue)" stroke-width="2"/>
-              <text x="45" y="30" font-size="11" fill="var(--ink-soft)">Symptom</text>
-              <text x="102" y="66" font-size="11" fill="var(--ink-soft)">Diagnosis</text>
-              <text x="158" y="30" font-size="11" fill="var(--ink-soft)">Medication</text>
-              <text x="112" y="142" font-size="11" fill="var(--ink-soft)">QA</text>
+            <svg viewBox="0 0 220 132" role="img" aria-label="Compact clinical knowledge graph">
+              <line class="graph-edge" data-kg-edge="symptom" x1="56" y1="42" x2="110" y2="72" stroke="var(--blue)" stroke-width="2.2"/>
+              <line class="graph-edge" data-kg-edge="medication" x1="164" y1="42" x2="110" y2="72" stroke="var(--blue)" stroke-width="2.2"/>
+              <line class="graph-edge" data-kg-edge="qa" x1="110" y1="80" x2="110" y2="108" stroke="var(--blue)" stroke-width="2"/>
+              <circle class="graph-node" data-kg-node="symptom" cx="56" cy="42" r="7" fill="var(--blue)"/>
+              <circle class="graph-node" data-kg-node="diagnosis" cx="110" cy="72" r="8" fill="var(--ink-soft)"/>
+              <circle class="graph-node" data-kg-node="medication" cx="164" cy="42" r="7" fill="var(--green)"/>
+              <circle class="graph-node" data-kg-node="qa" cx="110" cy="108" r="7" fill="var(--blue-deep)"/>
+              <text x="42" y="25" font-size="9.5" fill="var(--ink-soft)">symptom</text>
+              <text x="91" y="64" font-size="9.5" fill="var(--ink-soft)">diagnosis</text>
+              <text x="142" y="25" font-size="9.5" fill="var(--ink-soft)">med</text>
+              <text x="104" y="127" font-size="9.5" fill="var(--ink-soft)">qa</text>
             </svg>
+            <div class="kg-legend">
+              <span>entity</span><span>relation</span><span>GraphRAG</span>
+            </div>
           </div>
         </div>
-        <div class="score-scale" aria-label="Composite score local dev range">
-          <span>0.868</span><span class="line"></span><span>0.885</span>
+        <div class="kg-score-card" aria-label="Composite score local dev range">
+          <span>composite</span><span class="line"></span><b>0.868-0.885</b>
         </div>
-        <p class="demo-mini-copy">composite score range, local dev</p>
       </div>
     `,
     gov: `
@@ -1440,7 +1511,7 @@
     function clearGraph() {
       nodes.forEach(node => {
         node.classList.remove('is-hot');
-        node.setAttribute('r', '8');
+        node.setAttribute('r', node.dataset.kgNode === 'diagnosis' ? '8' : '7');
       });
       edges.forEach(edge => edge.classList.remove('is-hot'));
       terms.forEach(term => term.classList.remove('is-active'));
@@ -1453,11 +1524,11 @@
       const term = back.querySelector(`[data-kg-target="${target}"]`);
       [node, diagnosis].filter(Boolean).forEach(item => {
         item.classList.add('is-hot');
-        item.setAttribute('r', '10');
+        item.setAttribute('r', item.dataset.kgNode === 'diagnosis' ? '9' : '8.5');
       });
       if (edge) edge.classList.add('is-hot');
       if (term) term.classList.add('is-active');
-      status.textContent = target === 'medication' ? 'selected: aspirin' : 'selected: chest pain';
+      status.textContent = target === 'medication' ? 'medication linked' : 'symptom linked';
     }
     terms.forEach(btn => {
       btn.addEventListener('click', () => highlight(btn.dataset.kgTarget));
