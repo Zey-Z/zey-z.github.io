@@ -319,6 +319,28 @@
     white-space: normal;
     line-height: 1.35;
   }
+  button.demo-chip,
+  .demo-step {
+    border: 0;
+    cursor: pointer;
+    transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
+  }
+  button.demo-chip:hover,
+  .demo-step:hover {
+    background: rgba(0,113,227,.11);
+    color: var(--blue-deep);
+    transform: translateY(-1px);
+  }
+  button.demo-chip:disabled {
+    cursor: default;
+    opacity: .65;
+    transform: none;
+  }
+  button.demo-chip.is-active,
+  .demo-step.is-active {
+    background: rgba(0,113,227,.13);
+    color: var(--blue-deep);
+  }
   .demo-status.is-approved,
   .demo-status.is-synced,
   .demo-note.is-ok {
@@ -408,6 +430,7 @@
     color: var(--ink-soft);
   }
   .lead-steps { display: flex; flex-direction: column; gap: 10px; }
+  .lead-text.is-processing { border-color: rgba(0,113,227,.36); }
   .lead-stage {
     opacity: 0;
     transform: translateY(10px);
@@ -431,7 +454,15 @@
     background: var(--blue);
     transition: width .7s var(--ease);
   }
-  .lead-stage.is-scored .score-fill { width: 100%; }
+  .lead-stage.is-scored .score-fill { width: 82%; }
+  .lead-detail {
+    min-height: 34px;
+    border-radius: 12px;
+    padding: 9px 11px;
+    background: rgba(0,113,227,.08);
+    color: var(--blue-deep);
+    font-size: 12px;
+  }
   .route-badge {
     opacity: 0;
     transform: translateY(8px);
@@ -482,6 +513,10 @@
     background: rgba(0,113,227,.1);
     cursor: pointer;
     font: inherit;
+  }
+  .transcript button.is-active,
+  .transcript button:hover {
+    background: rgba(0,113,227,.16);
   }
   .graph-panel {
     min-height: 150px;
@@ -569,7 +604,9 @@
     height: 12px;
     border-radius: 8px;
     background: rgba(0,0,0,.08);
+    transition: background .25s var(--ease), opacity .25s var(--ease);
   }
+  .skeleton.is-active span { background: rgba(0,113,227,.14); }
   .skeleton span:nth-child(2) { width: 72%; }
   .skeleton span:nth-child(3) { width: 88%; }
   .json-output {
@@ -581,12 +618,27 @@
   .demo-stack { display: grid; gap: 9px; }
   .demo-mini-copy { font-size: 12.5px; color: var(--ink-soft); line-height: 1.45; }
   .source-stack { display: grid; gap: 8px; }
+  .tax-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .demo-step {
+    border-radius: 12px;
+    padding: 8px 9px;
+    background: rgba(0,0,0,.05);
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    text-align: center;
+  }
   @media (max-width: 820px) {
     .tile-face { padding: 30px 24px; }
     .kg-grid,
     .browser-body { grid-template-columns: 1fr; }
     .chip-grid { grid-template-columns: 1fr; }
     .slack-findings { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .tax-steps { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tile-shell,
@@ -1075,24 +1127,26 @@
       <div class="tile-demo" data-demo-panel="gtm">
         <div class="demo-topline">
           <span class="demo-title">Inbound lead test</span>
+          <span class="demo-status" data-gtm-status>ready</span>
           <button class="demo-btn" type="button" data-gtm-action="run">Send test lead</button>
         </div>
-        <div class="lead-text">
+        <div class="lead-text" data-gtm-lead>
           Inbound: operations team wants AI triage for incoming requests.<br>
           Need owner routing, urgency, and CRM follow-up.
         </div>
         <div class="lead-steps">
           <div class="lead-stage demo-chip" data-gtm-stage="extracting">Extracting...</div>
           <div class="lead-stage chip-grid" data-gtm-stage="chips">
-            <span class="demo-chip ok">budget</span>
-            <span class="demo-chip ok">urgency</span>
-            <span class="demo-chip ok">contact</span>
-            <span class="demo-chip ok">company</span>
+            <button class="demo-chip ok" type="button" data-gtm-field="budget">budget</button>
+            <button class="demo-chip ok" type="button" data-gtm-field="urgency">urgency</button>
+            <button class="demo-chip ok" type="button" data-gtm-field="contact">contact</button>
+            <button class="demo-chip ok" type="button" data-gtm-field="company">company</button>
           </div>
           <div class="lead-stage demo-row" data-gtm-stage="score">
-            <span class="demo-chip">weighted score</span>
+            <span class="demo-chip" data-gtm-score-label>weighted score: pending</span>
             <span class="score-track" aria-hidden="true"><span class="score-fill"></span></span>
           </div>
+          <div class="lead-stage lead-detail" data-gtm-detail>Click a field chip after extraction to inspect routing evidence.</div>
           <span class="demo-chip route-badge" data-gtm-route>Routed to HubSpot · Slack notified</span>
         </div>
       </div>
@@ -1125,8 +1179,9 @@
       <div class="tile-demo" data-demo-panel="clinical">
         <div class="demo-topline">
           <span class="demo-title">Transcript to graph</span>
-          <span class="demo-chip">GraphRAG QA</span>
+          <span class="demo-chip" data-kg-status>selected: chest pain</span>
         </div>
+        <p class="demo-mini-copy">Click a highlighted term to light the linked node and relation.</p>
         <div class="kg-grid">
           <div class="transcript">
             Patient reports <button type="button" data-kg-target="symptom">chest pain</button> during the visit.<br>
@@ -1160,6 +1215,7 @@
           <span class="demo-title">Cited local answer</span>
           <span class="demo-chip lock-badge">Local Llama · 58 counties · no external calls</span>
         </div>
+        <p class="demo-mini-copy">Submit the question, then click [1] or [2] to inspect the source chunk.</p>
         <div class="fake-input demo-row">
           <span>Ask a question</span>
           <span class="demo-chip">What evidence supports this answer?</span>
@@ -1178,6 +1234,11 @@
           <span class="demo-title">Browser automation replay</span>
           <button class="demo-btn secondary" type="button" data-tax-action="replay">Replay</button>
         </div>
+        <div class="tax-steps" aria-label="Automation steps">
+          <button class="demo-step" type="button" data-tax-step="1">1 input address</button>
+          <button class="demo-step" type="button" data-tax-step="2">2 navigate page</button>
+          <button class="demo-step" type="button" data-tax-step="3">3 extract JSON</button>
+        </div>
         <div class="browser-mock">
           <div class="browser-bar">
             <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
@@ -1190,7 +1251,7 @@
             <pre class="json-output" data-tax-json></pre>
           </div>
         </div>
-        <p class="demo-mini-copy">One day: ask &#8594; working automation.</p>
+        <p class="demo-mini-copy" data-tax-caption>One day: ask &#8594; working automation.</p>
       </div>
     `
   };
@@ -1287,20 +1348,66 @@
     const stages = Array.from(back.querySelectorAll('[data-gtm-stage]'));
     const route = back.querySelector('[data-gtm-route]');
     const score = back.querySelector('[data-gtm-stage="score"]');
+    const status = back.querySelector('[data-gtm-status]');
+    const lead = back.querySelector('[data-gtm-lead]');
+    const runButton = back.querySelector('[data-gtm-action="run"]');
+    const detail = back.querySelector('[data-gtm-detail]');
+    const scoreLabel = back.querySelector('[data-gtm-score-label]');
+    const fields = Array.from(back.querySelectorAll('[data-gtm-field]'));
+    const fieldDetails = {
+      budget: 'budget: captured as a qualification signal, not a promise of spend.',
+      urgency: 'urgency: used to prioritize routing before CRM handoff.',
+      contact: 'contact: extracted for follow-up ownership.',
+      company: 'company: normalized before HubSpot and Slack routing.'
+    };
+    function setStatus(text, cls) {
+      status.textContent = text;
+      status.className = 'demo-status';
+      if (cls) status.classList.add(cls);
+    }
+    function selectField(name) {
+      fields.forEach(field => field.classList.toggle('is-active', field.dataset.gtmField === name));
+      detail.textContent = fieldDetails[name] || 'Click a field chip after extraction to inspect routing evidence.';
+    }
     function reset() {
       clearDemoTimers(tile);
       stages.forEach(stage => stage.classList.remove('is-visible', 'is-scored'));
       route.classList.remove('is-visible');
+      lead.classList.remove('is-processing');
+      fields.forEach(field => {
+        field.classList.remove('is-active');
+        field.disabled = true;
+      });
+      scoreLabel.textContent = 'weighted score: pending';
+      detail.textContent = 'Click a field chip after extraction to inspect routing evidence.';
+      runButton.textContent = 'Send test lead';
+      setStatus('ready');
     }
     function run() {
       reset();
+      lead.classList.add('is-processing');
+      setStatus('extracting');
+      runButton.textContent = 'Run again';
       stages.forEach((stage, i) => {
         later(tile, () => stage.classList.add('is-visible'), 450 + i * 700);
       });
-      later(tile, () => score.classList.add('is-scored'), 2200);
-      later(tile, () => route.classList.add('is-visible'), 2850);
+      later(tile, () => fields.forEach(field => { field.disabled = false; }), 1200);
+      later(tile, () => selectField('urgency'), 1750);
+      later(tile, () => {
+        score.classList.add('is-scored');
+        scoreLabel.textContent = 'weighted score: qualified';
+        setStatus('scored');
+      }, 2200);
+      later(tile, () => {
+        route.classList.add('is-visible');
+        lead.classList.remove('is-processing');
+        setStatus('routed', 'is-synced');
+      }, 2850);
     }
-    back.querySelector('[data-gtm-action="run"]').addEventListener('click', run);
+    runButton.addEventListener('click', run);
+    fields.forEach(field => {
+      field.addEventListener('click', () => selectField(field.dataset.gtmField));
+    });
     reset();
   }
 
@@ -1328,25 +1435,31 @@
   function setupClinicalDemo(back) {
     const nodes = Array.from(back.querySelectorAll('[data-kg-node]'));
     const edges = Array.from(back.querySelectorAll('[data-kg-edge]'));
+    const terms = Array.from(back.querySelectorAll('[data-kg-target]'));
+    const status = back.querySelector('[data-kg-status]');
     function clearGraph() {
       nodes.forEach(node => {
         node.classList.remove('is-hot');
         node.setAttribute('r', '8');
       });
       edges.forEach(edge => edge.classList.remove('is-hot'));
+      terms.forEach(term => term.classList.remove('is-active'));
     }
     function highlight(target) {
       clearGraph();
       const diagnosis = back.querySelector('[data-kg-node="diagnosis"]');
       const node = back.querySelector(`[data-kg-node="${target}"]`);
       const edge = back.querySelector(`[data-kg-edge="${target}"]`);
+      const term = back.querySelector(`[data-kg-target="${target}"]`);
       [node, diagnosis].filter(Boolean).forEach(item => {
         item.classList.add('is-hot');
         item.setAttribute('r', '10');
       });
       if (edge) edge.classList.add('is-hot');
+      if (term) term.classList.add('is-active');
+      status.textContent = target === 'medication' ? 'selected: aspirin' : 'selected: chest pain';
     }
-    back.querySelectorAll('[data-kg-target]').forEach(btn => {
+    terms.forEach(btn => {
       btn.addEventListener('click', () => highlight(btn.dataset.kgTarget));
     });
     highlight('symptom');
@@ -1382,26 +1495,64 @@
       }, answerText.length * 18 + 120);
     }
     back.querySelector('[data-gov-action="ask"]').addEventListener('click', ask);
+    chunks.forEach(chunk => {
+      chunk.addEventListener('click', () => highlightSource(chunk.dataset.source));
+    });
   }
 
   function setupTaxDemo(tile, back) {
     const address = back.querySelector('[data-tax-address]');
     const output = back.querySelector('[data-tax-json]');
+    const steps = Array.from(back.querySelectorAll('[data-tax-step]'));
+    const skeleton = back.querySelector('.skeleton');
+    const caption = back.querySelector('[data-tax-caption]');
     const finalJson = `{
   "owner": "[extracted owner]",
   "account": "[extracted account]",
   "tax_year": "[current statement]",
   "amount_due": "[extracted amount]"
 }`;
-    function run() {
+    function setStep(step) {
+      steps.forEach(btn => btn.classList.toggle('is-active', Number(btn.dataset.taxStep) === step));
+      skeleton.classList.toggle('is-active', step === 2);
+      if (step === 1) {
+        address.textContent = 'harris-county-tax/search?address=[input]';
+        output.textContent = '';
+        caption.textContent = 'Step 1: the ambiguous ask becomes a structured browser input.';
+      }
+      if (step === 2) {
+        address.textContent = 'harris-county-tax/search?address=[input]';
+        output.textContent = 'navigating...';
+        caption.textContent = 'Step 2: automation waits through page state changes before extraction.';
+      }
+      if (step === 3) {
+        address.textContent = 'harris-county-tax/search?address=[input]';
+        skeleton.classList.remove('is-active');
+        typeInto(tile, output, finalJson, 14);
+        caption.textContent = 'Step 3: the useful output is structured JSON, not a screenshot.';
+      }
+    }
+    function reset() {
       clearDemoTimers(tile);
       address.textContent = 'about:blank';
       output.textContent = '';
-      later(tile, () => { address.textContent = 'harris-county-tax/search?address=[input]'; }, 300);
-      later(tile, () => { output.textContent = 'navigating...'; }, 900);
-      later(tile, () => typeInto(tile, output, finalJson, 14), 1450);
+      caption.textContent = 'One day: ask -> working automation.';
+      steps.forEach(btn => btn.classList.remove('is-active'));
+      skeleton.classList.remove('is-active');
+    }
+    function run() {
+      reset();
+      later(tile, () => setStep(1), 300);
+      later(tile, () => setStep(2), 900);
+      later(tile, () => setStep(3), 1450);
     }
     back.querySelector('[data-tax-action="replay"]').addEventListener('click', run);
+    steps.forEach(btn => {
+      btn.addEventListener('click', () => {
+        clearDemoTimers(tile);
+        setStep(Number(btn.dataset.taxStep));
+      });
+    });
     tile._demoStart = run;
   }
 
